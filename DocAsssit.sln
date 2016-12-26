@@ -1,0 +1,56 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocAssistRuntime", "DocAssistRuntime\DocAssistRuntime.csproj", "{22946F73-B29E-43BE-B43C-35C63D20AA72}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenameEnumerator", "RenameEnumerator\RenameEnumerator.csproj", "{C409F0CA-8727-4E11-AA1B-2BFFD4C5B66F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocAssistShared", "DocAssistShared\DocAssistShared.csproj", "{2304FD87-7D9A-498A-BBBF-8EF92B8CBF51}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileEnumerator", "FileEnumerator\FileEnumerator.csproj", "{38256A24-6422-445A-962D-894CE0217022}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 5
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs25
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = DocAssistRuntime\\DocAssistRuntime.csproj
+		SccProjectName1 = DocAssistRuntime
+		SccLocalPath1 = DocAssistRuntime
+		SccProjectUniqueName2 = DocAssistShared\\DocAssistShared.csproj
+		SccProjectName2 = DocAssistShared
+		SccLocalPath2 = DocAssistShared
+		SccProjectUniqueName3 = FileEnumerator\\FileEnumerator.csproj
+		SccProjectName3 = FileEnumerator
+		SccLocalPath3 = FileEnumerator
+		SccProjectUniqueName4 = RenameEnumerator\\RenameEnumerator.csproj
+		SccProjectName4 = RenameEnumerator
+		SccLocalPath4 = RenameEnumerator
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{22946F73-B29E-43BE-B43C-35C63D20AA72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22946F73-B29E-43BE-B43C-35C63D20AA72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22946F73-B29E-43BE-B43C-35C63D20AA72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22946F73-B29E-43BE-B43C-35C63D20AA72}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C409F0CA-8727-4E11-AA1B-2BFFD4C5B66F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C409F0CA-8727-4E11-AA1B-2BFFD4C5B66F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C409F0CA-8727-4E11-AA1B-2BFFD4C5B66F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C409F0CA-8727-4E11-AA1B-2BFFD4C5B66F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2304FD87-7D9A-498A-BBBF-8EF92B8CBF51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2304FD87-7D9A-498A-BBBF-8EF92B8CBF51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2304FD87-7D9A-498A-BBBF-8EF92B8CBF51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2304FD87-7D9A-498A-BBBF-8EF92B8CBF51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38256A24-6422-445A-962D-894CE0217022}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38256A24-6422-445A-962D-894CE0217022}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38256A24-6422-445A-962D-894CE0217022}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38256A24-6422-445A-962D-894CE0217022}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
