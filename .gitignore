@@ -2,4 +2,9 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/DocAssistRuntime/obj/Debug
+/DocAssistRuntime/obj
+/DocAssistShared/obj
+/FileEnumerator/bin
+/RenameEnumerator/bin
+/RenameEnumerator/obj
+/FileEnumerator/obj

@@ -26,8 +26,7 @@ namespace RenameEnumerator
         /// <param name="newNames">The new names for the files</param>
         /// <param name="reportFile">The report file to write the report to</param>
         /// <param name="append">Whether to append to an existing report</param>
-        private static void GenerateReport(IEnumerable<FileSystemInfo> files, IEnumerable<string> newNames,
-                                           string reportFile, bool append = false)
+        private static void GenerateReport(IEnumerable<FileSystemInfo> files, IEnumerable<string> newNames, string reportFile, bool append = false)
         {
             using (var rw = new StreamWriter(reportFile, append))
             {
