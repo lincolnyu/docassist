@@ -72,8 +72,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetPath)" "C:\noninst\QS\gadgets\docassist\" /Y
-xcopy "$(TargetDir)sample-scripts\*.cs" "C:\noninst\QS\gadgets\docassist\scripts\" /Y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(TargetPath)" "$(DocAssist)" /Y
+xcopy "$(TargetDir)sample-scripts\*.cs" "$(DocAssist)\scripts\" /Y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
