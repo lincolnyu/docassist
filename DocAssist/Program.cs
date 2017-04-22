@@ -8,10 +8,12 @@ namespace DocAssist
 {
     class Program
     {
+        static int GetBufferSize() => 4096;
+
         static void Concat(IEnumerable<FileInfo> files, FileInfo target)
         {
-            const int bufferSize = 4096;
-            byte[] buffer = new byte[bufferSize];
+            var bufferSize = GetBufferSize();
+            var buffer = new byte[bufferSize];
             using (var ofs = target.OpenWrite())
             {
                 foreach (var file in files)
@@ -29,6 +31,31 @@ namespace DocAssist
             }
         }
 
+        static long Slice(FileInfo file, long start, long len, FileInfo target)
+        {
+            var bufferSize = GetBufferSize();
+            var buffer = new byte[bufferSize];
+            using (var ofs = target.OpenWrite())
+            using (var ifs = file.OpenRead())
+            {
+                var actual = ifs.Seek(start, SeekOrigin.Begin);
+                if (actual != start)
+                {
+                    return 0;
+                }
+                var totalRead = 0L;
+                for (var left = len; left > 0; )
+                {
+                    var toRead = bufferSize < left ? bufferSize : (int)left;
+                    var read = ifs.Read(buffer, 0, toRead);
+                    if (read <= 0) break;
+                    ofs.Write(buffer, 0, read);
+                    totalRead += read;
+                }
+                return totalRead;
+            }
+        }
+
         static void DoConcatProgram(string dirStr, string targetStr)
         {
             var dir = new DirectoryInfo(dirStr);
@@ -39,6 +66,15 @@ namespace DocAssist
             Console.WriteLine($"Concatenating completed.");
         }
 
+        static void DoSliceProgram(string ifStr, long? start, long? len, string ofStr)
+        {
+            var input = new FileInfo(ifStr);
+            var output = new FileInfo(ofStr);
+            if (start == null) start = 0;
+            if (len == null) len = input.Length - start.Value;
+            Slice(input, start.Value, len.Value, output);
+        }
+
         static void PrintUsage(string topic = null)
         {
             switch (topic)
@@ -46,21 +82,19 @@ namespace DocAssist
                 case "concat":
                     Console.WriteLine("concat [--in <input directory>] --out <output file>");
                     break;
+                case "slice":
+                    Console.WriteLine("slice --in <input file> --out <output file> [--start <start>] [--len <length>]");
+                    break;
                 default:
                     Console.WriteLine("Choose topic: ");
                     Console.WriteLine("  concat");
+                    Console.WriteLine("  slice");
                     break;
             }
         }
 
         static string EnsureAbs(string path, string baseDir)
-        {
-            if (Path.IsPathRooted(path))
-            {
-                return path;
-            }
-            return Path.Combine(baseDir, path);
-        }
+            => Path.IsPathRooted(path)? path : Path.Combine(baseDir, path);
 
         static void Main(string[] args)
         {
@@ -79,10 +113,21 @@ namespace DocAssist
                     input = workingDir;
                 }
                 input = EnsureAbs(input, workingDir);
-                Console.WriteLine($"old target = {target}");
                 target = EnsureAbs(target, workingDir);
-                Console.WriteLine($"new target = {target}");
                 DoConcatProgram(input, target);
+            }
+            else if (args.Contains("s") || args.Contains("slice"))
+            {
+                var input = args.GetSwitchValue("--in") ?? args.GetSwitchValue("-i");
+                var target = args.GetSwitchValue("--out") ?? args.GetSwitchValue("-o");
+                var start = args.GetSwitchValueAsLongOpt("--start");
+                var len = args.GetSwitchValueAsLongOpt("--len");
+                if (input == null || target == null)
+                {
+                    PrintUsage("slice");
+                    return;
+                }
+                DoSliceProgram(input, start, len, target);
             }
             else
             {
