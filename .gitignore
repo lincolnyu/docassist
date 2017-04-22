@@ -17,3 +17,6 @@
 /DocAssist/obj
 /DocSync/bin
 /DocSync/obj
+/DocAssistTests/bin
+/DocAssistTests/obj
+/packages
