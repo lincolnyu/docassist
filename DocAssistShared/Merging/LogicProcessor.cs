@@ -7,11 +7,11 @@ namespace DocAssistShared.Merging
     public class LogicProcessor
     {
         /// <summary>
-        ///  The result of FF, FT, TF, TT
+        ///  The result of TT, TF, FT, FF 
         /// </summary>
         public enum Operators
         {
-            FFFF, 
+            FFFF = 0, 
             FFFT,
             FFTF,
             FFTT,
@@ -31,8 +31,8 @@ namespace DocAssistShared.Merging
 
         public enum CommonOperators
         {
-            And = Operators.FFFT,
-            Or = Operators.FTTT,
+            And = Operators.TFFF,
+            Or = Operators.TTTF,
             Xor = Operators.FTTF
         }
 
@@ -49,30 +49,42 @@ namespace DocAssistShared.Merging
         ///     A immediately holds B                            &lt;=IP     T
         ///     A is not an immediate directory                  &lt;=P      T
         ///   A and B are both directory
-        ///     B immediately holds A                            &lt;IF    &lt;=IP   
-        ///     B is an unimmediate parent directory of A        &lt;IF    &lt;=P
-        ///     A immediately holds B                            &lt;=IP   &lt;IF
-        ///     A is an unimmediate parent directory of A        &lt;=P    &lt;IF
+        ///     B immediately holds A                            !file     &lt;=IP   
+        ///     B is an unimmediate parent directory of A        !file     &lt;=P
+        ///     A immediately holds B                            &lt;=IP   !file
+        ///     A is an unimmediate parent directory of A        &lt;=P    !file
         /// </remarks>
         public enum PresenceLevels
         {
-            Parent,
-            ImmediateParent,
-            Directory,
-            File,
+            ParentOrDir,
+            ParentOrFile,
+            ImmediateParentOrDir,
+            ImmediateParentOrFile
         }
 
-        public LogicProcessor(Operators op, PresenceLevels leftLevel, PresenceLevels rightLevel, string sourceBase, string targetBase)
+        public delegate bool FileValidDelegate(FileUnit fu);
+        public delegate void OutputDelegate(FileUnit left, FileUnit right);
+
+        public LogicProcessor(Operators op, PresenceLevels leftLevel, PresenceLevels rightLevel, OutputDelegate output, FileValidDelegate fileValid)
         {
             Operator = op;
             LeftLevel = leftLevel;
             RightLevel = rightLevel;
-            SourceBase = sourceBase;
-            TargetBase = targetBase;
+            Output = output;
+            FileValid = fileValid;
         }
 
-        public LogicProcessor(CommonOperators op, PresenceLevels leftLevel, PresenceLevels rightLevel, string sourceBase, string targetBase)
-            : this((Operators)op, leftLevel, rightLevel,sourceBase, targetBase)
+        public LogicProcessor(Operators op, PresenceLevels leftLevel, PresenceLevels rightLevel, OutputDelegate output) : this(op, leftLevel, rightLevel, output, fu => fu != null && File.Exists(fu.OriginalPath))
+        {
+        }
+
+        public LogicProcessor(CommonOperators op, PresenceLevels leftLevel, PresenceLevels rightLevel, OutputDelegate output, FileValidDelegate fileValid)
+            : this((Operators)op, leftLevel, rightLevel, output, fileValid)
+        {
+        }
+
+        public LogicProcessor(CommonOperators op, PresenceLevels leftLevel, PresenceLevels rightLevel, OutputDelegate output)
+           : this((Operators)op, leftLevel, rightLevel, output)
         {
         }
 
@@ -80,13 +92,20 @@ namespace DocAssistShared.Merging
         public PresenceLevels LeftLevel { get; }
         public PresenceLevels RightLevel { get; }
 
-        public string SourceBase { get; }
-        public string TargetBase { get; }
+        public OutputDelegate Output { get; }
+
+        public FileValidDelegate FileValid { get; }
+
+        private static bool LevelIsFile(PresenceLevels level) => level == PresenceLevels.ImmediateParentOrFile || level == PresenceLevels.ParentOrFile;
+
+        private static bool LevelIsImmediate(PresenceLevels level) => level == PresenceLevels.ImmediateParentOrFile
+            || level == PresenceLevels.ImmediateParentOrDir;
 
         public void Process(FileUnit lhs, FileUnit rhs)
         {
-            var lisfile = File.Exists(lhs.Path);
-            var risfile = File.Exists(rhs.Path);
+            System.Diagnostics.Debug.Assert(lhs != null || rhs != null);
+            var lisfile = FileValid(lhs);
+            var risfile = FileValid(rhs);
             bool l, r;
             if (lisfile && risfile)
             {
@@ -95,32 +114,55 @@ namespace DocAssistShared.Merging
             }
             else
             {
-                if (lhs.VirtualPath.StartsWith(rhs.VirtualPath))
+                if (lhs != null && (rhs == null || lhs.VirtualPath.StartsWith(rhs.VirtualPath)))
                 {
-                    if (lhs.VirtualPath.GetParentDirectory() == rhs.VirtualPath)
+                    if (rhs == null)
                     {
-                        r = RightLevel <= PresenceLevels.ImmediateParent;
+                        r = false;
+                    }
+                    else if (lhs.VirtualPath.GetParentDirectory().TrimEnd(Path.DirectorySeparatorChar) == rhs.VirtualPath)
+                    {
+                        r = true;
                     }
                     else
                     {
-                        r = RightLevel == PresenceLevels.Parent;
+                        r = !LevelIsImmediate(RightLevel);
                     }
-                    l = LeftLevel < PresenceLevels.File || lisfile;
+                    if (LevelIsFile(LeftLevel) && !lisfile) return;
+                    l = true;
                 }
                 else
                 {
-                    System.Diagnostics.Debug.Assert(rhs.VirtualPath.StartsWith(lhs.VirtualPath));
-                    if (rhs.VirtualPath.GetParentDirectory() == lhs.VirtualPath)
+                    System.Diagnostics.Debug.Assert(rhs != null && (lhs == null || rhs.VirtualPath.StartsWith(lhs.VirtualPath)));
+                    if (lhs == null)
                     {
-                        l = LeftLevel <= PresenceLevels.ImmediateParent;
+                        l = false;
+                    }
+                    else if (rhs.VirtualPath.GetParentDirectory().TrimEnd(Path.DirectorySeparatorChar) == lhs.VirtualPath)
+                    {
+                        l = true;
                     }
                     else
                     {
-                        l = LeftLevel == PresenceLevels.Parent;
+                        l = !LevelIsImmediate(LeftLevel);
                     }
-                    r = RightLevel < PresenceLevels.File || risfile;
+                    if (LevelIsFile(RightLevel) && !risfile) return;
+                    r = true;
                 }
             }
+            var output = Calculate(Operator, l, r);
+            if (output)
+            {
+                Output(lhs, rhs);
+            }
+        }
+
+        private static bool Calculate(Operators op, bool left, bool right)
+        {
+            var shift = left ? 1 : 0;
+            if (right) shift |= 2;
+            var mask = 1 << shift;
+            return ((int)op & mask) != 0;
         }
     }
 }
