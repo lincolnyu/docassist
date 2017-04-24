@@ -44,11 +44,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Merging\FileMerger.cs" />
+    <Compile Include="Merging\FileMerging.cs" />
     <Compile Include="Helpers\CompilationHelper.cs" />
     <Compile Include="Helpers\FileSystemHelper.cs" />
     <Compile Include="FileSelector.cs" />
-    <Compile Include="Merging\LogicProcessor.cs" />
+    <Compile Include="Merging\FileUnit.cs" />
+    <Compile Include="Merging\LogicFilter.cs" />
+    <Compile Include="Merging\MergeSink.cs" />
     <Compile Include="MultiFileRenamer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

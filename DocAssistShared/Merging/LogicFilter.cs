@@ -1,10 +1,9 @@
 ﻿using QLogger.FileSystemHelpers;
 using System.IO;
-using static DocAssistShared.Merging.FileMerger;
 
 namespace DocAssistShared.Merging
 {
-    public class LogicProcessor
+    public class LogicFilter
     {
         /// <summary>
         ///  The result of TT, TF, FT, FF 
@@ -37,7 +36,7 @@ namespace DocAssistShared.Merging
         }
 
         /// <summary>
-        ///  
+        ///  Possible presence levels of each side
         /// </summary>
         /// <remarks>
         ///  Possible scenarios A vs B
@@ -65,7 +64,7 @@ namespace DocAssistShared.Merging
         public delegate bool FileValidDelegate(FileUnit fu);
         public delegate void OutputDelegate(FileUnit left, FileUnit right);
 
-        public LogicProcessor(Operators op, PresenceLevels leftLevel, PresenceLevels rightLevel, OutputDelegate output, FileValidDelegate fileValid)
+        public LogicFilter(Operators op, PresenceLevels leftLevel, PresenceLevels rightLevel, OutputDelegate output, FileValidDelegate fileValid)
         {
             Operator = op;
             LeftLevel = leftLevel;
@@ -74,16 +73,16 @@ namespace DocAssistShared.Merging
             FileValid = fileValid;
         }
 
-        public LogicProcessor(Operators op, PresenceLevels leftLevel, PresenceLevels rightLevel, OutputDelegate output) : this(op, leftLevel, rightLevel, output, fu => fu != null && File.Exists(fu.OriginalPath))
+        public LogicFilter(Operators op, PresenceLevels leftLevel, PresenceLevels rightLevel, OutputDelegate output) : this(op, leftLevel, rightLevel, output, fu => fu != null && File.Exists(fu.OriginalPath))
         {
         }
 
-        public LogicProcessor(CommonOperators op, PresenceLevels leftLevel, PresenceLevels rightLevel, OutputDelegate output, FileValidDelegate fileValid)
+        public LogicFilter(CommonOperators op, PresenceLevels leftLevel, PresenceLevels rightLevel, OutputDelegate output, FileValidDelegate fileValid)
             : this((Operators)op, leftLevel, rightLevel, output, fileValid)
         {
         }
 
-        public LogicProcessor(CommonOperators op, PresenceLevels leftLevel, PresenceLevels rightLevel, OutputDelegate output)
+        public LogicFilter(CommonOperators op, PresenceLevels leftLevel, PresenceLevels rightLevel, OutputDelegate output)
            : this((Operators)op, leftLevel, rightLevel, output)
         {
         }

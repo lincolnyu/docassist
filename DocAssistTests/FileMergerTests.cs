@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using static DocAssistShared.Merging.FileMerger;
+using static DocAssistShared.Merging.FileMerging;
 
 namespace DocAssistTests
 {
@@ -103,9 +103,13 @@ namespace DocAssistTests
             var aunits = GenerateUnits(ARelPaths, ABase);
             var bunits = GenerateUnits(BRelPaths, BBase);
             var actualResult = new List<Tuple<string, string>>();
-            var processor = new LogicProcessor(LogicProcessor.CommonOperators.Or, LogicProcessor.PresenceLevels.ParentOrFile, LogicProcessor.PresenceLevels.ParentOrFile, (l, r) =>
+            var processor = new LogicFilter(LogicFilter.CommonOperators.Or, LogicFilter.PresenceLevels.ParentOrFile, LogicFilter.PresenceLevels.ParentOrFile, (l, r) =>
                 actualResult.Add(new Tuple<string, string>(l?.VirtualPath, r?.VirtualPath)), fu=>fu != null && Path.HasExtension(fu.OriginalPath));
-            Merge(aunits, bunits, processor.Process);
+            var runits = Merge(aunits, bunits);
+            foreach (var runit in runits)
+            {
+                processor.Process(runit.Item1, runit.Item2);
+            }
             AssertTuplesAreEqual(ExpectedResultParentOrFileOr, actualResult);
         }
 
@@ -115,9 +119,13 @@ namespace DocAssistTests
             var aunits = GenerateUnits(ARelPaths, ABase);
             var bunits = GenerateUnits(BRelPaths, BBase);
             var actualResult = new List<Tuple<string, string>>();
-            var processor = new LogicProcessor(LogicProcessor.CommonOperators.And, LogicProcessor.PresenceLevels.ImmediateParentOrDir, LogicProcessor.PresenceLevels.ImmediateParentOrDir, (l, r) =>
+            var processor = new LogicFilter(LogicFilter.CommonOperators.And, LogicFilter.PresenceLevels.ImmediateParentOrDir, LogicFilter.PresenceLevels.ImmediateParentOrDir, (l, r) =>
                 actualResult.Add(new Tuple<string, string>(l?.VirtualPath, r?.VirtualPath)), fu => fu != null && Path.HasExtension(fu.OriginalPath));
-            Merge(aunits, bunits, processor.Process);
+            var runits = Merge(aunits, bunits);
+            foreach (var runit in runits)
+            {
+                processor.Process(runit.Item1, runit.Item2);
+            }
             AssertTuplesAreEqual(ExpectedResultImmediateParentOrDirAnd, actualResult);
         }
 
