@@ -172,7 +172,10 @@ namespace DocAssistShared.Merging
 
         private static void CopyTo(FileUnit fu, string target)
         {
-            File.Copy(fu.OriginalPath, target);
+            if (fu.OriginalPath != target)
+            {
+                File.Copy(fu.OriginalPath, target, true);
+            }
         }
 
         private void CopyBoth(FileUnit left, FileUnit right)
