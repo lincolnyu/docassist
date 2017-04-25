@@ -158,15 +158,23 @@ namespace DocAssistShared.Merging
             }
         }
 
+        public static string GetTarget(FileUnit fu, string targetBase) => Path.Combine(targetBase, fu.VirtualPath);
+        public static string GetLTarget(FileUnit lfu, string targetBase) => Path.Combine(targetBase, lfu.VirtualPath, "#l");
+        public static string GetRTarget(FileUnit rfu, string targetBase) => Path.Combine(targetBase, rfu.VirtualPath, "#r");
+
+        public string GetTarget(FileUnit fu) => GetTarget(fu, TargetBase);
+        public string GetLTarget(FileUnit lfu) => GetLTarget(lfu, TargetBase);
+        public string GetRTarget(FileUnit rfu) => GetRTarget(rfu, TargetBase);
+
         private void CreateDir(FileUnit fu)
         {
-            var target = Path.Combine(TargetBase, fu.VirtualPath);
+            var target = GetTarget(fu);
             Directory.CreateDirectory(target);
         }
 
         private void Copy(FileUnit fu)
         {
-            var target = Path.Combine(TargetBase, fu.VirtualPath);
+            var target = GetTarget(fu);
             CopyTo(fu, target);
         }
 
@@ -180,8 +188,8 @@ namespace DocAssistShared.Merging
 
         private void CopyBoth(FileUnit left, FileUnit right)
         {
-            var ltarget = Path.Combine(TargetBase, left.VirtualPath, "#l");
-            var rtarget = Path.Combine(TargetBase, right.VirtualPath, "#r");
+            var ltarget = GetLTarget(left);
+            var rtarget = GetRTarget(right);
             CopyTo(left, ltarget);
             CopyTo(right, rtarget);
         }

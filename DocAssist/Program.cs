@@ -56,7 +56,7 @@ namespace DocAssist
             }
         }
 
-        static void DoConcatProgram(string dirStr, string targetStr)
+        static void RunConcatProgram(string dirStr, string targetStr)
         {
             var dir = new DirectoryInfo(dirStr);
             var files = dir.GetFiles();
@@ -66,7 +66,7 @@ namespace DocAssist
             Console.WriteLine($"Concatenating completed.");
         }
 
-        static void DoSliceProgram(string ifStr, long? start, long? len, string ofStr)
+        static void RunSliceProgram(string ifStr, long? start, long? len, string ofStr)
         {
             var input = new FileInfo(ifStr);
             var output = new FileInfo(ofStr);
@@ -87,8 +87,8 @@ namespace DocAssist
                     break;
                 default:
                     Console.WriteLine("Choose topic: ");
-                    Console.WriteLine("  concat");
-                    Console.WriteLine("  slice");
+                    Console.WriteLine("  c[oncat]");
+                    Console.WriteLine("  s[lice]");
                     break;
             }
         }
@@ -99,10 +99,11 @@ namespace DocAssist
         static void Main(string[] args)
         {
             var workingDir = Directory.GetCurrentDirectory();
+            var hasHelp = args.Contains("--help");
             if (args.Contains("c") || args.Contains("concat"))
             {
                 var target = args.GetSwitchValue("--out")?? args.GetSwitchValue("-o");
-                if (target == null)
+                if (hasHelp || target == null)
                 {
                     PrintUsage("concat");
                     return;
@@ -114,7 +115,7 @@ namespace DocAssist
                 }
                 input = EnsureAbs(input, workingDir);
                 target = EnsureAbs(target, workingDir);
-                DoConcatProgram(input, target);
+                RunConcatProgram(input, target);
             }
             else if (args.Contains("s") || args.Contains("slice"))
             {
@@ -122,12 +123,12 @@ namespace DocAssist
                 var target = args.GetSwitchValue("--out") ?? args.GetSwitchValue("-o");
                 var start = args.GetSwitchValueAsLongOpt("--start");
                 var len = args.GetSwitchValueAsLongOpt("--len");
-                if (input == null || target == null)
+                if (hasHelp || input == null || target == null)
                 {
                     PrintUsage("slice");
                     return;
                 }
-                DoSliceProgram(input, start, len, target);
+                RunSliceProgram(input, start, len, target);
             }
             else
             {

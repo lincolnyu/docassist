@@ -5,8 +5,6 @@ namespace DocAssistShared.Merging
 {
     public static class FileMerging
     {
-        public delegate void Process(FileUnit lhs, FileUnit rhs);
-
         private static FileUnit.CompareResults Compare(FileUnit lhs, FileUnit rhs)
         {
             System.Diagnostics.Debug.Assert(lhs != null || rhs != null);

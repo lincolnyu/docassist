@@ -46,10 +46,7 @@ namespace DocAssistShared
 
             foreach (var d in startFolder.GetDirectories())
             {
-                if (visitDir != null)
-                {
-                    visitDir(d, currRelativeDir);
-                }
+                visitDir?.Invoke(d, currRelativeDir);
 
                 if (directoryFilter == null || directoryFilter(d))
                 {
@@ -82,10 +79,7 @@ namespace DocAssistShared
                     SelectFilesPreOrder(d, directoryFilter, visitFile, visitDir, sb.ToString());
                 }
 
-                 if (visitDir != null)
-                 {
-                     visitDir(d, currRelativeDir);
-                 }
+                visitDir?.Invoke(d, currRelativeDir);
             }
 
             if (visitFile != null)
