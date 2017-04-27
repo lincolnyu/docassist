@@ -3,11 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace DocAssist
 {
     class Program
     {
+        private delegate void VoidDelegate();
+
         static int GetBufferSize() => 4096;
 
         static void Concat(IEnumerable<FileInfo> files, FileInfo target)
@@ -75,18 +78,112 @@ namespace DocAssist
             Slice(input, start.Value, len.Value, output);
         }
 
+        private static void RunAwaitedCopyProgram(string source, string target, bool move, bool force, bool verbose)
+        {
+            var handle = new VoidDelegate(() =>
+            {
+                if (verbose)
+                {
+                    Console.WriteLine($"Source '{source}' appears");
+                }
+                if (Directory.Exists(target))
+                {
+                    target = Path.Combine(target, Path.GetFileName(source));
+                }
+                if (File.Exists(target))
+                {
+                    if (force)
+                    {
+                        File.Delete(target);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Target file '{target}' already exists");
+                        return;
+                    }
+                }
+                if (verbose)
+                {
+                    Console.Write((move ? "Moving" : "Copying") + $" file '{source}' to '{target}' ...");
+                }
+                if (move)
+                {
+                    File.Move(source, target);
+                }
+                else
+                {
+                    File.Copy(source, target);
+                }
+                Console.WriteLine(" Done");
+            });
+            if (File.Exists(source))
+            {
+                handle();
+            }
+            else
+            {
+                var watcher = new FileSystemWatcher()
+                {
+                    Path = Path.GetDirectoryName(source),
+                    NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.CreationTime
+                };
+                var fileEvent = new ManualResetEvent(false);
+
+                FileSystemEventHandler fseh = null;
+                RenamedEventHandler reh = null;
+                var unsubscribe = new VoidDelegate(() =>
+                {
+                    watcher.Created -= fseh;
+                    watcher.Changed -= fseh;
+                    watcher.Renamed -= reh;
+                });
+                fseh = (s, e) =>
+                {
+                    if (e.FullPath.ToLower() == source.ToLower()) // TODO windows only
+                    {
+                        unsubscribe();
+                        handle();
+                        fileEvent.Set();
+                    }
+                };
+                reh = (s, e) =>
+                {
+                    if (e.FullPath.ToLower() == source.ToLower()) // TODO windows only
+                    {
+                        unsubscribe();
+                        handle();
+                        fileEvent.Set();
+                    }
+                };
+              
+                watcher.Created += fseh;
+                watcher.Changed += fseh;
+                watcher.Renamed += reh; 
+                if (verbose)
+                {
+                    Console.WriteLine($"Waiting for '{source}' ...");
+                }
+                watcher.EnableRaisingEvents = true;
+                fileEvent.WaitOne();
+            }
+        }
+
         static void PrintUsage(string topic = null)
         {
             switch (topic)
             {
+                case "awaitedcopy":
+                    Console.WriteLine("[a]w[aited]c[opy] [--in <source file>] --out <target file> [--move] [--force] [--verbose]");
+                    break;
                 case "concat":
-                    Console.WriteLine("concat [--in <input directory>] --out <output file>");
+                    Console.WriteLine("c[oncat] [--in <input directory>] --out <output file>");
                     break;
                 case "slice":
-                    Console.WriteLine("slice --in <input file> --out <output file> [--start <start>] [--len <length>]");
+                    Console.WriteLine("s[lice] --in <input file> --out <output file> [--start <start>] [--len <length>]");
                     break;
                 default:
                     Console.WriteLine("Choose topic: ");
+                    Console.WriteLine("  [a]w[aited]c[opy]");
                     Console.WriteLine("  c[oncat]");
                     Console.WriteLine("  s[lice]");
                     break;
@@ -100,7 +197,23 @@ namespace DocAssist
         {
             var workingDir = Directory.GetCurrentDirectory();
             var hasHelp = args.Contains("--help");
-            if (args.Contains("c") || args.Contains("concat"))
+            if (args.Contains("wc") || args.Contains("awaitedcopy"))
+            {
+                var source = args.GetSwitchValue("--in") ?? args.GetSwitchValue("-i");
+                var target = args.GetSwitchValue("--out") ?? args.GetSwitchValue("-o");
+                var move = args.Contains("--move");
+                var force = args.Contains("--force");
+                var verbose = args.Contains("--verbose");
+                if (source == null || target == null)
+                {
+                    PrintUsage("awaitedcopy");
+                    return;
+                }
+                source = EnsureAbs(source, workingDir);
+                target = EnsureAbs(target, workingDir);
+                RunAwaitedCopyProgram(source, target, move, force, verbose);
+            }
+            else if (args.Contains("c") || args.Contains("concat"))
             {
                 var target = args.GetSwitchValue("--out")?? args.GetSwitchValue("-o");
                 if (hasHelp || target == null)
@@ -129,7 +242,7 @@ namespace DocAssist
                     return;
                 }
                 RunSliceProgram(input, start, len, target);
-            }
+            }            
             else
             {
                 PrintUsage();
