@@ -75,7 +75,7 @@ namespace DocSync
             switch (topic)
             {
                 case "merge":
-                    Console.WriteLine("m[erge] [--in <input directory>] --out <output file>");
+                    Console.WriteLine("m[erge] --left <left directory> -right <right directory> --op <operator> --out <merge list file> [--prompt]");
                     break;
                 default:
                     Console.WriteLine("Choose topic: ");
@@ -93,7 +93,7 @@ namespace DocSync
                 var right = args.GetSwitchValue("--right");
                 var target = args.GetSwitchValue("--out");
                 var opStr = args.GetSwitchValue("--op");
-                var op = ParseOperator(opStr);
+                var op = opStr != null ? ParseOperator(opStr) : null;
                 if (hasHelp || left == null || right == null || target == null || op == null)
                 {
                     PrintUsage("merge");
@@ -101,6 +101,10 @@ namespace DocSync
                 }
                 var prompt = args.Contains("--prompt");
                 RunMergeProgram(op.Value, left, right, target, prompt);
+            }
+            else
+            {
+                PrintUsage();
             }
         }
     }
